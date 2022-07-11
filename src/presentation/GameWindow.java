@@ -8,6 +8,8 @@ import rule.Participante;
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class GameWindow extends JFrame {
     private JLabel letterLabel;
@@ -26,8 +28,19 @@ public class GameWindow extends JFrame {
     private JPanel submitPanel;
     private Participante participante;
 
-    public GameWindow(String username, int id) {
+    private java.util.Timer timer;
+    private TimerTask task;
+    private JProgressBar progressBar;
+    private JPanel progressPanel;
+    private int timerCounter;
+    private int timerMax;
+    private int errors;
+    private String[] errorsMessages;
+
+    public GameWindow(String username, int id, int timerMax) {
         super("Pense rápido, " + username);
+        this.timerMax = timerMax;
+        this.timerCounter = timerMax;
         participante = new Participante(id);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -44,6 +57,7 @@ public class GameWindow extends JFrame {
     private void init() {
         letters = LetrasDAO.getLetras();
         loadLetter(letters.get(0));
+
     }
     private void addComponents() {
         letterLabel = new JLabel();
@@ -57,6 +71,18 @@ public class GameWindow extends JFrame {
         categoryPanel = new JPanel();
         submitButton = new JButton("Enviar");
         submitPanel = new JPanel();
+        progressBar = new JProgressBar();
+        progressBar.setMaximum(timerMax);
+        progressPanel = new JPanel();
+
+
+        errors = 0;
+        errorsMessages = new String[]{"Depressa!!!", "O tempo está passando!!", "Você consegue!!", "Pense mais rápido",
+                "Você está perdendo tempo lendo isso", "Tem mais algumas pela frente", "Não é tão difícil", "Todos estão esperando",
+                "Estamos quase lá", "Você tentou.", "Na próxima vai ser mais fácil", "Tempo é o bem mais precioso",
+                "Quase no fim","Golpe de misericordia"};
+
+        addTask();
 
         letterPanel.add(letterLabel);
         JButton playButton = new JButton("Jogar");
@@ -67,10 +93,12 @@ public class GameWindow extends JFrame {
         categoryPanel.add(frutaFild);
         categoryPanel.add(objetoFild);
         categoryPanel.add(animalFild);
+        progressPanel.add(progressBar);
         submitPanel.add(submitButton);
 
         add(letterPanel);
         add(categoryPanel);
+        add(progressPanel);
         add(submitPanel);
 
     }
@@ -78,21 +106,48 @@ public class GameWindow extends JFrame {
 //        setLayout(new GridLayout(2, 1));
         setLayout(new FlowLayout());
         categoryPanel.setLayout(new GridLayout(3, 2, 0, 10));
+        progressBar.setValue(100);
 
+    }
+
+    private void addTask() {
+        task = new TimerTask() {
+            @Override
+            public void run() {
+                if (timerCounter > 0) {
+                    progressBar.setValue(timerCounter);
+                    timerCounter--;
+                } else {
+                    timeUp();
+                }
+            }
+        };
+        timer = new Timer();
+        timer.scheduleAtFixedRate(task, 0, 100);
     }
     private void addEvents() {
         submitButton.addActionListener(e -> submitClicked());
     }
     private void submitClicked() {
-
+        resetToNextLetter();
+    }
+    private void timeUp() {
+        resetToNextLetter();
+        letterLabel.setText(letterLabel.getText() + ", " + errorsMessages[errors]);
+        errors ++;
+    }
+    private void resetToNextLetter(){
         CategoriasDAO.insert(getCategorias());
 
         if (letters.size() > letters.indexOf(currentLetter) + 1 ) {
             loadLetter(letters.get(letters.indexOf(currentLetter) + 1));
+            progressBar.setValue(timerMax);
+            timerCounter = timerMax;
         } else {
             JOptionPane.showMessageDialog(this, "Fim do jogo");
             System.exit(0);
         }
+
     }
     private Categorias getCategorias() {
         Categorias categoria = new Categorias();
