@@ -11,7 +11,7 @@ import database.connection.SQLConnection;
 
 public class ParticipanteDAO {
 
-	public Participante listarPorId(int id) {
+	public static Participante listarPorId(int id) {
 
 		Participante participante = new Participante();
 

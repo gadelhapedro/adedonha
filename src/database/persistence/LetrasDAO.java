@@ -12,7 +12,7 @@ public class LetrasDAO {
 
     public static ArrayList<String> getLetras() {
         Connection connection = SQLConnection.getConnection();
-        String sql = "SELECT letra FROM Letras";
+        String sql = "SELECT letra FROM letras";
         ArrayList<String> letras = new ArrayList<String>();
         try {
             PreparedStatement result = connection.prepareStatement(sql);

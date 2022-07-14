@@ -5,6 +5,7 @@ import rule.Participante;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Objects;
 
 public class MainWindow extends JFrame {
     private JPanel backgroundPanel;
@@ -105,13 +106,14 @@ public class MainWindow extends JFrame {
         idPanel.setVisible(false);
         usernamePanel.setVisible(false);
         difficultyPanel.setVisible(false);
+        signedUpPanel.setVisible(false);
         add(backgroundPanel);
 
 
     }
     private void addLayout() {
         setLayout(new FlowLayout());
-        backgroundPanel.setLayout(new GridLayout(8, 1, 0, 5));
+        backgroundPanel.setLayout(new GridLayout(9, 1, 0, 5));
         usernamePanel.setLayout(new FlowLayout());
         helpPanel.setLayout(new FlowLayout(FlowLayout.TRAILING));
         titlePanel.setLayout(new FlowLayout(FlowLayout.CENTER));
@@ -166,13 +168,21 @@ public class MainWindow extends JFrame {
             usernamePanel.setVisible(true);
             idPanel.setVisible(false);
             difficultyPanel.setVisible(true);
+            signedUpPanel.setVisible(true);
             usernameTextField.requestFocus();
         }
         else{
-            this.dispose();
-            if (signedUp.isSelected())
+            if (!signedUp.isSelected()){
                 novoParticipante();
+            }else{
+                if(!checkParticipant()){
+                    JOptionPane.showMessageDialog(this, "Usuário ou ID inválido");
+                    playButtonClicked = true;
+                    return;
+                }
+            }
             getDifficulty();
+            this.dispose();
             new GameWindow(usernameTextField.getText(), Integer.parseInt(idTextField.getText()), timerCounter);
         }
         playButtonClicked = true;
@@ -200,5 +210,8 @@ public class MainWindow extends JFrame {
         catch (NumberFormatException e){
             return false;
         }
+    }
+    private boolean checkParticipant() {
+        return Objects.equals(ParticipanteDAO.listarPorId(Integer.parseInt(idTextField.getText())).getNome(), usernameTextField.getText());
     }
 }
