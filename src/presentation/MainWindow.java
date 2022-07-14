@@ -29,6 +29,8 @@ public class MainWindow extends JFrame {
     private JComboBox<String> difficultyComboBox;
     private boolean playButtonClicked;
     private int timerCounter;
+    private JCheckBox signedUp;
+    private JPanel signedUpPanel;
 
     public MainWindow() {
         super("Adedonha");
@@ -65,6 +67,8 @@ public class MainWindow extends JFrame {
         idLabel = new JLabel("Seu ID:");
         idTextField = new JTextField();
         idPanel = new JPanel();
+        signedUp = new JCheckBox("Já sou cadastrado");
+        signedUpPanel = new JPanel();
         difficultyPanel = new JPanel();
         difficultyLabel = new JLabel("Dificuldade:");
         difficultyComboBox = new JComboBox<>();
@@ -83,6 +87,7 @@ public class MainWindow extends JFrame {
         usernamePanel.add(usernameTextField);
         idPanel.add(idLabel);
         idPanel.add(idTextField);
+        signedUpPanel.add(signedUp);
         difficultyPanel.add(difficultyLabel);
         difficultyPanel.add(difficultyComboBox);
         backgroundPanel.add(helpPanel);
@@ -90,6 +95,7 @@ public class MainWindow extends JFrame {
         backgroundPanel.add(subtitlePanel);
         backgroundPanel.add(usernamePanel);
         backgroundPanel.add(idPanel);
+        backgroundPanel.add(signedUpPanel);
         backgroundPanel.add(playPanel);
         backgroundPanel.add(infoPanel);
         backgroundPanel.add(difficultyPanel);
@@ -119,12 +125,23 @@ public class MainWindow extends JFrame {
         usernamePanel.setLayout(new FlowLayout(FlowLayout.LEFT));
         idPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
         difficultyPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+        signedUpPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
     }
 
     private void addEvents() {
         helpButton.addActionListener(e -> helpClicked());
         playButton.addActionListener(e -> playClicked());
+        signedUp.addActionListener(e -> signedUpClicked());
     }
+
+    private void signedUpClicked() {
+        if (signedUp.isSelected()) {
+            idPanel.setVisible(true);
+            usernamePanel.setVisible(true);
+            difficultyPanel.setVisible(true);
+        }
+    }
+
     private void helpClicked() {
         JOptionPane.showMessageDialog(this, "Insira uma palavra com a letra sorteda na tela" +
                 "que encaixe no tema.ex: carro, lugar, objeto, etc." +"Para começar a jogar clique em jogar e insira seu nome.");
@@ -147,22 +164,29 @@ public class MainWindow extends JFrame {
         }
         else if (usernameTextField.getText().isEmpty()) {
             usernamePanel.setVisible(true);
-            idPanel.setVisible(true);
+            idPanel.setVisible(false);
             difficultyPanel.setVisible(true);
             usernameTextField.requestFocus();
         }
         else{
             this.dispose();
-            Participante participante = new Participante();
-            participante.setNome(usernameTextField.getText());
-            participante.setId(Integer.parseInt(idTextField.getText()));
-            ParticipanteDAO.inserir(participante);
+            if (signedUp.isSelected())
+                novoParticipante();
             getDifficulty();
             new GameWindow(usernameTextField.getText(), Integer.parseInt(idTextField.getText()), timerCounter);
         }
         playButtonClicked = true;
     }
+    private void novoParticipante() {
+        Participante participante = new Participante();
+        participante.setNome(usernameTextField.getText());
+        participante.setId(Integer.parseInt(idTextField.getText()));
+        ParticipanteDAO.inserir(participante);
+    }
     private boolean checkId(){
+        if (signedUp.isSelected()) {
+            return true;
+        }
         if (idTextField.getText().isEmpty()) {
             return false;
         }
